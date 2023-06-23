@@ -388,8 +388,20 @@ def main():
     elif nav_choice == "Statistics":
         statistics()
 
-    st.sidebar.markdown("""<style>#logout-btn { margin-top: 20px; }</style>""", unsafe_allow_html=True)
-    if st.sidebar.button("Log Out", key="logout-btn"):
+    st.sidebar.markdown("""
+        <style>
+        .logout-button-container {
+            margin-top: 300px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    with st.sidebar.container():
+        st.markdown('<div class="logout-button-container">', unsafe_allow_html=True)
+        logout_button = st.button("Log Out")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    if logout_button:
         logout()
         st.experimental_rerun()
 
