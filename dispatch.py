@@ -388,10 +388,11 @@ def main():
     elif nav_choice == "Statistics":
         statistics()
 
-    if st.sidebar.button("Log Out"):
+    st.sidebar.markdown("""<style>#logout-btn { margin-top: 20px; }</style>""", unsafe_allow_html=True)
+    if st.sidebar.button("Log Out", key="logout-btn"):
         logout()
         st.experimental_rerun()
-        
+
 def set():
     json_file_path = "JSON/dispatchmain-22ce5-firebase-adminsdk-xdm0a-668347f78c.json"
 
