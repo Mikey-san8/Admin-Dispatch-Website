@@ -21,7 +21,7 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 try:
     firebase_app = firebase_admin.get_app()
 except ValueError:
-    cred = credentials.Certificate("https://github.com/Maiku8/DispatchDashboard/tree/59a030f179e6cc873380f6fb1fee5b937b1d0ce2/JSON")
+    cred = credentials.Certificate("JSON\dispatchmain-22ce5-firebase-adminsdk-xdm0a-668347f78c.json")
     firebase_admin.initialize_app(cred, {
         'databaseURL': 'https://dispatchmain-22ce5-default-rtdb.asia-southeast1.firebasedatabase.app/'
     })
