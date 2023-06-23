@@ -11,6 +11,7 @@ import time
 from datetime import datetime, timedelta
 import geopy.exc
 import os
+import pandas as pd
 
 def login():
     if st.session_state.get('logged_in'):
@@ -212,9 +213,12 @@ def data():
                 row_data.extend(report_value.values())
                 table_data.append(row_data)
 
-            headers = ["Report ID"] + list(reports[list(reports.keys())[0]].keys())
+            headers = ['Report Key/s'] + list(reports[list(reports.keys())[0]].keys())
             table = [headers] + table_data
-            st.table(table)
+
+            df = pd.DataFrame(table)
+            
+            st.dataframe(df)
 
             st.write("Enter the key to delete:")
             delete_key = st.text_input("Key")
@@ -422,17 +426,19 @@ def set():
     st.markdown(
     """
     <style>
-    table 
-    {
-        font-size: 10.5px;
-        margin: 5px;
+    table {
+        font-size: 12px;
+        font-family: Monospace;
+    }
+    table td, table th {
+        padding: 10px;
     }
     button {
         float: right;
     }
     </style>
     """,
-    unsafe_allow_html=True,
+    unsafe_allow_html=True
     )
 
     if login():
