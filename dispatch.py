@@ -12,55 +12,36 @@ from datetime import datetime, timedelta
 import geopy.exc
 import os
 
+def login():
+    if st.session_state.get('logged_in'):
+        return True
 
+    username = st.sidebar.text_input("Username")
+    password = st.sidebar.text_input("Password", type="password")
+    login_button = st.sidebar.button("Login")
+
+    if login_button:
+        # Perform login logic here
+        if username == "admin" and password == "password":
+            st.success("Login successful!")
+            st.session_state.logged_in = True
+            return True
+        else:
+            st.error("Invalid username or password.")
+            return False
+        
 def calculate_distance(lat1, lon1, lat2, lon2):
-
     coords1 = (lat1, lon1)
     coords2 = (lat2, lon2)
     distance = geodesic(coords1, coords2).kilometers
     return distance
 
-json_file_path = "JSON/dispatchmain-22ce5-firebase-adminsdk-xdm0a-668347f78c.json"
-
-if os.path.isfile(json_file_path):
-    try:
-        firebase_app = firebase_admin.get_app()
-    except ValueError:
-        cred = credentials.Certificate(json_file_path)
-        firebase_admin.initialize_app(cred, {
-            'databaseURL': 'https://dispatchmain-22ce5-default-rtdb.asia-southeast1.firebasedatabase.app/'
-        })
-else:
-    print("JSON file not found at the specified path:", json_file_path)
-
-
-    firebase_app = firebase_admin.get_app()
-
-st.set_page_config(page_title="DISPATCH Dashboard")
-
-nav_options = ["Home", "Data", "Statistics"]
-nav_choice = st.sidebar.selectbox("Navigation", nav_options)
-
-st.markdown(
-    """
-    <style>
-    table {
-        font-size: 10.5px;
-    }
-    button {
-        float: right;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-if nav_choice == "Home":
+def home():
     st.markdown("<h1 style='font-family: Arial, sans-serif; font-size: 50px;'>DISPATCH DASHBOARD</h1>", unsafe_allow_html=True)
     st.markdown("<h2 style='font-family: Arial, sans-serif;'>Welcome to DISPATCH!</h2>", unsafe_allow_html=True)
     st.markdown("<p style='font-family: Arial, sans-serif; color: #800000;'>DISPATCH:</p> <p style='font-family: Bahnschrift, sans-serif;'>An Android-based real-time tracking and monitoring system for civilian fire emergency report and firefighter fire emergency response with GPS utilizing Geo-hashing Algorithm</p>", unsafe_allow_html=True)
 
-elif nav_choice == "Data":
+def data():
     st.title("Data Page")
     st.write("Data retrieved from Database:")
 
@@ -190,7 +171,7 @@ elif nav_choice == "Data":
                     report_datalist['verified'] = False
                     data_ref.child(selected_key).child('Report').set(report_datalist)
                     st.experimental_rerun()
-              
+            
             if 'verified' in report_datalist:
                 st.write("Verified:", report_datalist['verified'])
             else:
@@ -253,8 +234,8 @@ elif nav_choice == "Data":
         if refresh_button:
                 st.experimental_rerun()     
 
-elif nav_choice == "Statistics":
 
+def statistics():
     data_ref = db.reference('Data')
     data = data_ref.get()
 
@@ -389,14 +370,49 @@ elif nav_choice == "Statistics":
 
     st.pyplot(fig)
 
+def main():
 
+    nav_options = ["Home", "Data", "Statistics"]
+    nav_choice = st.sidebar.selectbox("Navigation", nav_options)
 
+    if nav_choice == "Home":
+        home()
+    elif nav_choice == "Data":
+        data()
+    elif nav_choice == "Statistics":
+        statistics()
 
+def set():
+    json_file_path = "JSON/dispatchmain-22ce5-firebase-adminsdk-xdm0a-668347f78c.json"
 
+    if os.path.isfile(json_file_path):
+        try:
+            firebase_app = firebase_admin.get_app()
+        except ValueError:
+            cred = credentials.Certificate(json_file_path)
+            firebase_admin.initialize_app(cred, {
+                'databaseURL': 'https://dispatchmain-22ce5-default-rtdb.asia-southeast1.firebasedatabase.app/'
+            })
+    else:
+        st.error("JSON file not found at the specified path: " + json_file_path)
+        firebase_app = firebase_admin.get_app()
 
+    st.markdown(
+    """
+    <style>
+    table {
+        font-size: 10.5px;
+    }
+    button {
+        float: right;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+    )
 
+    if login():
+        main()
 
-
-
-
-
+st.set_page_config(page_title="DISPATCH Dashboard")
+set()
