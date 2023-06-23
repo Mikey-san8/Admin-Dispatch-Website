@@ -422,8 +422,10 @@ def set():
     st.markdown(
     """
     <style>
-    table {
+    table 
+    {
         font-size: 10.5px;
+        margin: 5px;
     }
     button {
         float: right;
@@ -437,14 +439,5 @@ def set():
         main()
 
 st.set_page_config(page_title="DISPATCH Dashboard", layout="wide")
-st.markdown(
-    """
-    <style>
-    body {
-        font-family: 'Monospace', monospace;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+
 set()
