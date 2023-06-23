@@ -29,7 +29,9 @@ def login():
         else:
             st.error("Invalid username or password.")
             return False
-        
+def logout():
+    st.session_state.logged_in = False
+
 def calculate_distance(lat1, lon1, lat2, lon2):
     coords1 = (lat1, lon1)
     coords2 = (lat2, lon2)
@@ -386,6 +388,10 @@ def main():
     elif nav_choice == "Statistics":
         statistics()
 
+    if st.sidebar.button("Log Out"):
+        logout()
+        st.experimental_rerun()
+        
 def set():
     json_file_path = "JSON/dispatchmain-22ce5-firebase-adminsdk-xdm0a-668347f78c.json"
 
