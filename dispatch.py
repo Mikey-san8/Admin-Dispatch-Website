@@ -389,11 +389,11 @@ def main():
         statistics()
 
     st.sidebar.markdown("""
-        <style>
-        .logout-button-container {
-            margin-top: 300px;
-        }
-        </style>
+    <style>
+    .logout-button-container {
+        margin-top: 100px;
+    }
+    </style>
     """, unsafe_allow_html=True)
 
     with st.sidebar.container():
