@@ -42,6 +42,7 @@ def home():
     st.markdown("<h1 style='font-family: Arial, sans-serif; font-size: 50px;'>DISPATCH DASHBOARD</h1>", unsafe_allow_html=True)
     st.markdown("<h2 style='font-family: Arial, sans-serif;'>Welcome to DISPATCH!</h2>", unsafe_allow_html=True)
     st.markdown("<p style='font-family: Arial, sans-serif; color: #800000;'>DISPATCH:</p> <p style='font-family: Bahnschrift, sans-serif;'>An Android-based real-time tracking and monitoring system for civilian fire emergency report and firefighter fire emergency response with GPS utilizing Geo-hashing Algorithm</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-family: Arial, sans-serif; font-size: 10px; margin-top: 150px;'>Questions? email us on:</p> <p style='font-family: Arial, sans-serif; color: #FFA500; font-size: 10px;'>dispatchofficial@gmail.com</p>", unsafe_allow_html=True)
 
 def data():
     st.title("Data Page")
@@ -155,8 +156,6 @@ def data():
         report_datalist = data_ref.child(selected_key).child('Report').get()
 
         if 'Report' in selected_data:
-
-            current_time = int(time.time() * 1000)    
 
             time_stamp = data_ref.child(selected_key).child('Report').child('TimeStamp').get()
 
@@ -437,5 +436,15 @@ def set():
     if login():
         main()
 
-st.set_page_config(page_title="DISPATCH Dashboard")
+st.set_page_config(page_title="DISPATCH Dashboard", layout="wide")
+st.markdown(
+    """
+    <style>
+    body {
+        font-family: 'Monospace', monospace;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 set()
