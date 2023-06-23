@@ -10,6 +10,8 @@ from geopy.geocoders import Nominatim
 import time
 from datetime import datetime, timedelta
 import geopy.exc
+import os
+
 
 def calculate_distance(lat1, lon1, lat2, lon2):
 
@@ -18,13 +20,19 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     distance = geodesic(coords1, coords2).kilometers
     return distance
 
-try:
-    firebase_app = firebase_admin.get_app()
-except ValueError:
-    cred = credentials.Certificate("C:\Users\Joe Saludares\Documents\Jow\DISPATCH\JSON\dispatchmain-22ce5-firebase-adminsdk-xdm0a-668347f78c.json")
-    firebase_admin.initialize_app(cred, {
-        'databaseURL': 'https://dispatchmain-22ce5-default-rtdb.asia-southeast1.firebasedatabase.app/'
-    })
+json_file_path = "JSON/dispatchmain-22ce5-firebase-adminsdk-xdm0a-668347f78c.json"
+
+if os.path.isfile(json_file_path):
+    try:
+        firebase_app = firebase_admin.get_app()
+    except ValueError:
+        cred = credentials.Certificate(json_file_path)
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': 'https://dispatchmain-22ce5-default-rtdb.asia-southeast1.firebasedatabase.app/'
+        })
+else:
+    print("JSON file not found at the specified path:", json_file_path)
+
 
     firebase_app = firebase_admin.get_app()
 
