@@ -370,6 +370,10 @@ def statistics():
 
     st.pyplot(fig)
 
+    refresh_button = st.button("Refresh", key="refresh_button")
+    if refresh_button:
+            st.experimental_rerun()   
+
 def main():
 
     nav_options = ["Home", "Data", "Statistics"]
