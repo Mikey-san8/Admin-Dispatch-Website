@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 from geopy.distance import geodesic
 import geopy.distance
 from geopy.geocoders import Nominatim
-import time
 from datetime import datetime, timedelta
 import geopy.exc
 import os
 import pandas as pd
+from dateutil import relativedelta
 
 def login():
     if st.session_state.get('logged_in'):
@@ -22,7 +22,6 @@ def login():
     login_button = st.sidebar.button("Login")
 
     if login_button:
-        # Perform login logic here
         if username == "admin" and password == "password":
             st.success("Login successful!")
             st.session_state.logged_in = True
@@ -30,6 +29,7 @@ def login():
         else:
             st.error("Invalid username or password.")
             return False
+        
 def logout():
     st.session_state.logged_in = False
 
@@ -46,6 +46,22 @@ def home():
     st.markdown("<p style='font-family: Arial, sans-serif; font-size: 10px; margin-top: 150px;'>Questions? email us on:</p> <p style='font-family: Arial, sans-serif; color: #FFA500; font-size: 10px;'>dispatchofficial@gmail.com</p>", unsafe_allow_html=True)
 
 def data():
+
+    st.markdown(
+    """
+    <style>
+    table {
+        font-size: 13px;
+        font-family: Monospace;
+    }
+    button {
+        float: right;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+    )
+
     st.title("Data Page")
     st.write("Data retrieved from Database:")
 
@@ -213,15 +229,11 @@ def data():
                 row_data.extend(report_value.values())
                 table_data.append(row_data)
 
-            headers = ['Report Key/s'] + list(reports[list(reports.keys())[0]].keys())
+            headers = ['Report Key/s (user identification key/s)'] + list(reports[list(reports.keys())[0]].keys())
             table = [headers] + table_data
-
-            df = pd.DataFrame(table)
-            
-            st.dataframe(df)
-
-            st.write("Enter the key to delete:")
-            delete_key = st.text_input("Key")
+            st.table(table)
+                
+            delete_key = st.text_input("Enter the key to delete:")
 
             if st.button("Delete"):
                 if delete_key in reports:
@@ -235,12 +247,63 @@ def data():
         else:
             st.write("No reports available.")
 
-        refresh_button = st.button("Refresh", key="refresh_button")
+
+        st.markdown("""
+        <style>
+        .refresh-button-container 
+        {
+            margin-top: 100px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+        with st.container():
+            st.markdown('<div class="refresh-button-container">', unsafe_allow_html=True)
+            refresh_button = st.button("Refresh", key="refresh_button")
+            st.markdown('</div>', unsafe_allow_html=True)
+
         if refresh_button:
                 st.experimental_rerun()     
 
+def reports():
+
+    st.markdown("""<style>table { font-size: 10px; font-family: Monospace; }</style>""", unsafe_allow_html=True)
+    
+    data_ref = db.reference('Data')
+    data = data_ref.get()
+
+    df = pd.DataFrame.from_dict(data, orient='index')
+
+    df['Date & Time'] = pd.to_datetime(df['Date & Time'])
+
+    time_range = st.selectbox("Select Time Range", ['Today', 'Last Week', 'Last Month', 'Past Months'])
+
+    today = datetime.now().date()
+    if time_range == 'Today':
+        start_date = today
+        end_date = today + timedelta(days=1)
+    elif time_range == 'Last Week':
+        start_date = today - timedelta(weeks=1)
+        end_date = today
+    elif time_range == 'Last Month':
+        start_date = today - timedelta(days=30)
+        end_date = today
+    elif time_range == 'Past Months':
+        num_months = st.number_input('Select Number of Past Months', min_value=1, max_value=12, value=1)
+        start_date = today - relativedelta.relativedelta(months=num_months)
+        end_date = today
+
+    start_datetime = datetime.combine(start_date, datetime.min.time())
+    end_datetime = datetime.combine(end_date, datetime.min.time())
+
+    filtered_df = df[(df['Date & Time'] >= start_datetime) & (df['Date & Time'] < end_datetime)]
+
+    st.table(filtered_df)
 
 def statistics():
+
+    st.markdown("""<style>table { font-size: 10px; font-family: Monospace; }</style>""", unsafe_allow_html=True)
+
     data_ref = db.reference('Data')
     data = data_ref.get()
 
@@ -381,23 +444,19 @@ def statistics():
 
 def main():
 
-    nav_options = ["Home", "Data", "Statistics"]
+    nav_options = ["Home", "Data", "Reports", "Statistics"]
     nav_choice = st.sidebar.selectbox("Navigation", nav_options)
 
     if nav_choice == "Home":
         home()
     elif nav_choice == "Data":
         data()
+    elif nav_choice == "Reports":
+        reports()    
     elif nav_choice == "Statistics":
         statistics()
 
-    st.sidebar.markdown("""
-    <style>
-    .logout-button-container {
-        margin-top: 100px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    st.sidebar.markdown("""<style>.logout-button-container { margin-top: 100px; }</style>""", unsafe_allow_html=True)
 
     with st.sidebar.container():
         st.markdown('<div class="logout-button-container">', unsafe_allow_html=True)
@@ -423,26 +482,11 @@ def set():
         st.error("JSON file not found at the specified path: " + json_file_path)
         firebase_app = firebase_admin.get_app()
 
-    st.markdown(
-    """
-    <style>
-    table {
-        font-size: 12px;
-        font-family: Monospace;
-    }
-    table td, table th {
-        padding: 10px;
-    }
-    button {
-        float: right;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-    )
+    st.markdown("""<style>button { float: right; }</style>""",unsafe_allow_html=True)
 
     if login():
         main()
+
 
 st.set_page_config(page_title="DISPATCH Dashboard", layout="wide")
 
