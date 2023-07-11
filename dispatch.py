@@ -276,18 +276,22 @@ def reports():
 
     df['Date & Time'] = pd.to_datetime(df['Date & Time'])
 
-    time_range = st.selectbox("Select Time Range", ['Today', 'Last Week', 'Last Month', 'Past Months'])
+    time_range = st.selectbox("Select Time Range", ['Today', 'Last 3 Days', 'Last Week', 'This Month', 'Past Months'])
 
     today = datetime.now().date()
+    
     if time_range == 'Today':
         start_date = today
         end_date = today + timedelta(days=1)
+    elif time_range == 'Last 3 Days':
+        start_date = today - timedelta(days=3)
+        end_date = today + timedelta(days=1)
     elif time_range == 'Last Week':
-        start_date = today - timedelta(weeks=1)
-        end_date = today
-    elif time_range == 'Last Month':
-        start_date = today - timedelta(days=30)
-        end_date = today
+        start_date = today - timedelta(days=today.weekday() + 7)
+        end_date = today - timedelta(days=today.weekday())
+    elif time_range == 'This Month':
+        start_date = today.replace(day=1)
+        end_date = today + timedelta(days=1)
     elif time_range == 'Past Months':
         num_months = st.number_input('Select Number of Past Months', min_value=1, max_value=12, value=1)
         start_date = today - relativedelta.relativedelta(months=num_months)
