@@ -1,0 +1,11 @@
+section[data-testid="stSidebar"] div.stButton button {
+    background-color: rgba(165, 42, 42, 0);
+    width: 200px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+section[data-testid="stSidebar"] div.stButton button .icon {
+    margin-left: auto;
+}

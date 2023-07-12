@@ -4,6 +4,7 @@ from firebase_admin import credentials
 from firebase_admin import db
 import datetime
 import matplotlib.pyplot as plt
+import random
 from geopy.distance import geodesic
 import geopy.distance
 from geopy.geocoders import Nominatim
@@ -12,6 +13,7 @@ import geopy.exc
 import os
 import pandas as pd
 from dateutil import relativedelta
+import numpy as np
 
 def login():
     if st.session_state.get('logged_in'):
@@ -54,10 +56,6 @@ def data():
         font-size: 13px;
         font-family: Monospace;
     }
-    button {
-        float: right;
-    }
-    </style>
     """,
     unsafe_allow_html=True
     )
@@ -68,7 +66,7 @@ def data():
     users_ref = db.reference('Users')
     firefighters_ref = db.reference('Firefighter')
 
-    data_type = st.sidebar.selectbox("Select Data Type", ["Users", "Firefighters"], key="data_type")
+    data_type = st.selectbox("Select Data Type", ["Users", "Firefighters"], key="data_type")
 
     if data_type == "Users":
         data_ref = users_ref
@@ -76,7 +74,7 @@ def data():
         data_ref = firefighters_ref
 
     keys = list(data_ref.get().keys())
-    selected_key = st.sidebar.selectbox("Select a Key", keys, key="selected_key")
+    selected_key = st.selectbox("Select a Key", keys, key="selected_key")
 
     if selected_key:
         selected_data = data_ref.child(selected_key).get()
@@ -269,6 +267,8 @@ def reports():
 
     st.markdown("""<style>table { font-size: 10px; font-family: Monospace; }</style>""", unsafe_allow_html=True)
     
+    st.title("Reports")
+
     data_ref = db.reference('Data')
     data = data_ref.get()
 
@@ -304,80 +304,18 @@ def reports():
 
     st.table(filtered_df)
 
+
 def statistics():
 
-    st.markdown("""<style>table { font-size: 10px; font-family: Monospace; }</style>""", unsafe_allow_html=True)
+    st.title("Statistics")
+    st.markdown("This page provides data analytics on location statistics, including NCR cities' occurrences and monthly trends.")
 
     data_ref = db.reference('Data')
     data = data_ref.get()
 
-    locations = {}
-
-    for key, value in data.items():
-        location = value.get('Location')
-        if location:
-            if location in locations:
-                locations[location] += 1
-            else:
-                locations[location] = 1
-
-    st.title("Location Statistics")
-    st.write("Occurrences of each location:")
-
-    st.table([(location, count) for location, count in locations.items()])
-
-    target_address = st.sidebar.text_input("Enter target address:", key="target_address")
-
-    geolocator = Nominatim(user_agent="dispatch_dashboard")
-
-    try:
-        target_location = geolocator.geocode(target_address)
-    except geopy.exc.GeocoderUnavailable:
-        target_location = None
-        st.sidebar.write("Geocoding service is currently unavailable. Please try again later.")
-    
-    if target_location:
-        target_lat = target_location.latitude
-        target_lon = target_location.longitude
-
-        ncr_cities = {
-        'Manila City': (14.5995, 120.9842),
-        'Pasay City': (14.5378, 121.0014),
-        'Makati City': (14.5547, 121.0244),
-        'Caloocan City': (14.6492, 120.9849),
-        'Las Pinas City': (14.4445, 120.9997),
-        'Malabon City': (14.6694, 120.9653),
-        'Mandaluyong City': (14.5794, 121.0359),
-        'Marikina City': (14.6507, 121.1029),
-        'Paranaque City': (14.4793, 121.0198),
-        'Navotas City': (14.6667, 120.9416),
-        'Pasig City': (14.5764, 121.0851),
-        'Quezon City': (14.6760, 121.0437),
-        'San Juan City': (14.6019, 121.0355),
-        'Taguig City': (14.5176, 121.0509),
-        'Valenzuela City': (14.6942, 120.9629)
-        }
-
-        city_distances = {}
-
-        for city, city_coords in ncr_cities.items():
-            distance = geopy.distance.geodesic(city_coords, (target_lat, target_lon)).kilometers
-            city_distances[city] = distance
-
-        nearest_city = min(city_distances, key=city_distances.get)
-        nearest_distance = city_distances[nearest_city]
-
-        st.sidebar.write("Nearest City:", nearest_city)
-        st.sidebar.write("Distance:", nearest_distance, "km")
-    else:
-        if not target_address:
-            st.sidebar.write("No address entered")
-        else:
-            st.sidebar.write("Invalid target address. Please enter a valid address.")
-    
     NCR_cities = ['Manila', 'Pasay', 'Makati', 'Caloocan', 'Quezon', 'Taguig',
-                'Valenzuela', 'Malabon', 'Navotas', 'Marikina', 'Parañaque',
-                'Las Piñas', 'Mandaluyong', 'San Juan']
+                  'Valenzuela', 'Malabon', 'Navotas', 'Marikina', 'Parañaque',
+                  'Las Piñas', 'Mandaluyong', 'San Juan']
 
     city_counts = {city: 0 for city in NCR_cities}
     month_counts = {month: 0 for month in range(1, 13)}
@@ -404,73 +342,106 @@ def statistics():
             month_counts[month] += 1
 
     cities = list(city_counts.keys())
-    counts = list(city_counts.values())
-
-    total_count = sum(counts)
-
-    fig, ax = plt.subplots()
-    ax.barh(cities, counts)
-
-    ax.set_xlabel('Occurrences')
-    ax.set_ylabel('City')
-    ax.set_title('Location Statistics (NCR Cities)')
-
-    for i, count in enumerate(counts):
-        ax.text(count, i, str(count), ha='left', va='center')
-
-    ax.text(total_count + 10, len(cities) + 0.5, f'Total: {total_locations}', ha='right', va='center')
-
-    plt.xticks(rotation=0)
-
-    st.pyplot(fig)
-
+    city_counts = list(city_counts.values())
     months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
-            'August', 'September', 'October', 'November', 'December']
-    counts = list(month_counts.values())
+              'August', 'September', 'October', 'November', 'December']
+    month_counts = list(month_counts.values())
 
-    fig, ax = plt.subplots()
-    ax.barh(months, counts)
+    total_count = sum(city_counts)
 
-    ax.set_xlabel('Occurrences')
-    ax.set_ylabel('Month')
-    ax.set_title('Location Statistics by Month')
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6))
 
-    for i, count in enumerate(counts):
-        ax.text(count, i, str(count), ha='left', va='center')
+    ax1.plot(cities, city_counts, marker='o', linestyle='-', color='blue')
+    ax1.set_xlabel('City')
+    ax1.set_ylabel('Occurrences')
+    ax1.set_title('Location Statistics (NCR Cities)')
 
-    plt.xticks(rotation=0)
+    for i, count in enumerate(city_counts):
+        ax1.text(i, count, str(count), ha='center', va='bottom')
+
+    ax1.set_xticklabels(cities, rotation=90, ha='right')
+
+    ax2.bar(months, month_counts, color='green')
+    ax2.set_xlabel('Month')
+    ax2.set_ylabel('Occurrences')
+    ax2.set_title('Location Statistics by Month')
+
+    for i, count in enumerate(month_counts):
+        ax2.text(i, count, str(count), ha='center', va='bottom')
+
+    ax2.set_xticklabels(months, rotation=90, ha='right')
+
+    ax3.set_title('Next Occurrence Prediction')
+    next_month = months[month_counts.index(max(month_counts)) % 12]
+    next_city_index = np.argmax(city_counts)
+    next_city = cities[next_city_index]
+    prediction_labels = ['Next Month', f'Next City ({next_city})']
+    prediction_sizes = [max(month_counts), city_counts[next_city_index]]
+    ax3.pie(prediction_sizes, labels=prediction_labels, autopct='%1.1f%%')
+
+    plt.xticks(rotation=90, ha='right')
+    plt.tight_layout()
 
     st.pyplot(fig)
 
     refresh_button = st.button("Refresh", key="refresh_button")
     if refresh_button:
-            st.experimental_rerun()   
-
-def main():
-
-    nav_options = ["Home", "Data", "Reports", "Statistics"]
-    nav_choice = st.sidebar.selectbox("Navigation", nav_options)
-
-    if nav_choice == "Home":
-        home()
-    elif nav_choice == "Data":
-        data()
-    elif nav_choice == "Reports":
-        reports()    
-    elif nav_choice == "Statistics":
-        statistics()
-
-    st.sidebar.markdown("""<style>.logout-button-container { margin-top: 100px; }</style>""", unsafe_allow_html=True)
-
-    with st.sidebar.container():
-        st.markdown('<div class="logout-button-container">', unsafe_allow_html=True)
-        logout_button = st.button("Log Out")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    if logout_button:
-        logout()
         st.experimental_rerun()
 
+def local_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+def main():
+    local_css("style.css")
+
+    st.markdown('<style>.sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 200px; padding: 20px; background-color: #f5f5f5; }</style>', unsafe_allow_html=True)
+    st.markdown('<style>.sidebar .sidebar-content { margin-bottom: 20px; }</style>', unsafe_allow_html=True)
+
+    nav_options = {
+        "Home": home,
+        "Data": data,
+        "Reports": reports,
+        "Statistics": statistics
+    }
+
+    st.sidebar.title("DISP👨‍🚒TCH")
+
+    st.sidebar.markdown("## Navigation")
+
+
+    if "selected_option" not in st.session_state:
+        st.session_state.selected_option = "Home"
+
+    home_clicked = st.sidebar.button("🏠 Home")
+    if home_clicked:
+        st.session_state.selected_option = "Home"
+
+    data_clicked = st.sidebar.button("📊 Data")
+    if data_clicked:
+        st.session_state.selected_option = "Data"
+
+    reports_clicked = st.sidebar.button("📄 Reports")
+    if reports_clicked:
+        st.session_state.selected_option = "Reports"
+
+    statistics_clicked = st.sidebar.button("📈 Statistics")
+    if statistics_clicked:
+        st.session_state.selected_option = "Statistics"
+
+    st.sidebar.markdown("## Account")
+
+    if "Logout" not in st.session_state:
+        st.session_state.Logout = False
+
+    logout_clicked = st.sidebar.button("Log Out", help='Log Out')
+    if logout_clicked:
+        st.session_state.Logout = True
+        st.experimental_rerun()
+
+    if not st.session_state.Logout:
+        nav_options[st.session_state.selected_option]()
+        
 def set():
     json_file_path = "JSON/dispatchmain-22ce5-firebase-adminsdk-xdm0a-668347f78c.json"
 
@@ -485,8 +456,6 @@ def set():
     else:
         st.error("JSON file not found at the specified path: " + json_file_path)
         firebase_app = firebase_admin.get_app()
-
-    st.markdown("""<style>button { float: right; }</style>""",unsafe_allow_html=True)
 
     if login():
         main()
