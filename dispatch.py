@@ -209,7 +209,7 @@ def data():
 
             col1, col2, col3, col4 = st.columns([3,3,2,1])
 
-            with col4:
+            with col3:
                 if st.button(verified_button_text, key="verified_button"):
                     if verified:
                         report_datalist['verified'] = False
@@ -263,7 +263,7 @@ def data():
 
     col1, col2, col3, col4 = st.columns([3,3,2,1])
 
-    with col4:
+    with col3:
         refresh_button = st.button("Refresh ♻️", key="refresh_button")
         if refresh_button:
             st.experimental_rerun()
