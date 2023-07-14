@@ -207,7 +207,7 @@ def data():
             else:
                 verified_button_text = "Validate ✅"
 
-            col1, col2, col3, col4 = st.columns([3,3,2,1])
+            col1, col2, col3 = st.columns([3,2,1])
 
             with col3:
                 if st.button(verified_button_text, key="verified_button"):
@@ -261,7 +261,7 @@ def data():
     </style>
     """, unsafe_allow_html=True)
 
-    col1, col2, col3, col4 = st.columns([3,3,2,1])
+    col1, col2, col3 = st.columns([3,2,1])
 
     with col3:
         refresh_button = st.button("Refresh ♻️", key="refresh_button")
