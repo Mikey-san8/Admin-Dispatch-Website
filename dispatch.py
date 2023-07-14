@@ -48,29 +48,29 @@ def home():
     st.markdown("<p style='font-family: Arial, sans-serif; font-size: 10px; margin-top: 150px;'>Questions? email us on:</p> <p style='font-family: Arial, sans-serif; color: #FFA500; font-size: 10px;'>dispatchofficial@gmail.com</p>", unsafe_allow_html=True)
 
 def data():
-
     st.markdown(
-    """
-    <style>
-    table {
-        font-size: 13px;
-        font-family: Monospace;
-    }
-    """,
-    unsafe_allow_html=True
+        """
+        <style>
+        table {
+            font-size: 13px;
+            font-family: Monospace;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
     )
-
+    
     st.title("Data Page")
     st.write("Data retrieved from Database:")
 
     users_ref = db.reference('Users')
     firefighters_ref = db.reference('Firefighter')
 
-    data_type = st.selectbox("Select Data Type", ["Users", "Firefighters"], key="data_type")
+    data_type = st.selectbox("Select Data Type", ["👤 Users", "🧯 Firefighters"], key="data_type")
 
-    if data_type == "Users":
+    if data_type == "👤 Users":
         data_ref = users_ref
-    elif data_type == "Firefighters":
+    elif data_type == "🧯 Firefighters":
         data_ref = firefighters_ref
 
     keys = list(data_ref.get().keys())
@@ -85,10 +85,10 @@ def data():
             st.write("Full Name:", full_name)
             st.write("Email:", selected_data['email'])
 
-            if data_type == "Users":
+            if data_type == "👤 Users":
                 st.write("Address:", selected_data['address'])
                 st.write("Phone:", selected_data['phone'])
-            elif data_type == "Firefighters":
+            elif data_type == "🧯 Firefighters":
                 st.write("Station Address:", selected_data['address'])
                 st.write("Phone:", selected_data['phone'])
                 st.write("Telephone:", selected_data['telephone'])
@@ -96,7 +96,7 @@ def data():
                     st.write("Badge #:", selected_data['badge number'])
                 else:
                     st.write("Badge #:", None)
-            
+
     if 'verify' in selected_data:
         if selected_data['verify']:
             st.write("Verified: Yes", "(",selected_data['verify'],")")
@@ -120,54 +120,58 @@ def data():
     else:
         verify = False
 
+    col1, col2, col3 = st.columns([3,2,1])
+
     if blocked:
-        block_button_text = "Unblock"
+        block_button_text = "Unblock 🔓"
     else:
-        block_button_text = "Block"
+        block_button_text = "Block 🔒"
 
-    if st.button(block_button_text, key="block_button"):
-        if blocked:
-            selected_data['blocked'] = False
-            st.write("Blocked:", False)
-            st.write("User data unblocked")
-        else:
-            selected_data['blocked'] = True
-            st.write("Blocked:", True)
-            st.write("User data blocked")
+    with col3:
+        if st.button(block_button_text, key="block_button"):
+            if blocked:
+                selected_data['blocked'] = False
+                st.write("Blocked:", False)
+                st.write("User data unblocked")
+            else:
+                selected_data['blocked'] = True
+                st.write("Blocked:", True)
+                st.write("User data blocked")
 
-        data_ref.child(selected_key).set(selected_data)
-        st.experimental_rerun()
+            data_ref.child(selected_key).set(selected_data)
+            st.experimental_rerun()
 
     if verify:
-        verify_button_text = "Invalidate"
+        verify_button_text = "Invalidate ❌"
     else:
-        verify_button_text = "Validate"
+        verify_button_text = "Validate ✅"
 
-    if st.button(verify_button_text, key="verify_button"):
-        if verify:
-            selected_data['verify'] = False
-            st.write("Verified:", False)
-            st.write("User data verified")
-        else:
-            selected_data['verify'] = True
-            st.write("Verified:", True)
-            st.write("User data removed verified")
+    with col3:
+        if st.button(verify_button_text, key="verify_button"):
+            if verify:
+                selected_data['verify'] = False
+                st.write("Verified:", False)
+                st.write("User data verified")
+            else:
+                selected_data['verify'] = True
+                st.write("Verified:", True)
+                st.write("User data removed verified")
 
-        data_ref.child(selected_key).set(selected_data)
-        st.experimental_rerun()
+            data_ref.child(selected_key).set(selected_data)
+            st.experimental_rerun()
 
     report_data = selected_data.get('Report')
 
     if report_data and 'Reports' in report_data:
         report_data.pop('Reports')
 
-    if data_type == "Users":
+    if data_type == "👤 Users":
         if report_data:
             st.write(data_type[:-1], "Report Data:")
             st.table(report_data)
         else:
             st.write("No report.")
-        
+
         report_datalist = data_ref.child(selected_key).child('Report').get()
 
         if 'Report' in selected_data:
@@ -187,7 +191,7 @@ def data():
                     report_datalist['verified'] = False
                     data_ref.child(selected_key).child('Report').set(report_datalist)
                     st.experimental_rerun()
-            
+
             if 'verified' in report_datalist:
                 st.write("Verified:", report_datalist['verified'])
             else:
@@ -199,24 +203,27 @@ def data():
                 verified = False
 
             if verified:
-                verified_button_text = "Invalidate"
+                verified_button_text = "Invalidate ❌"
             else:
-                verified_button_text = "Validate"
+                verified_button_text = "Validate ✅"
 
-            if st.button(verified_button_text, key="verified_button"):
-                if verified:
-                    report_datalist['verified'] = False
-                    st.write("Verified:", False)
-                    st.write("Report data verified")
-                else:
-                    report_datalist['verified'] = True
-                    st.write("Verified:", True)
-                    st.write("Report data removed verified")
+            col1, col2, col3, col4 = st.columns([3,3,2,1])
 
-                data_ref.child(selected_key).child('Report').set(report_datalist)
-                st.experimental_rerun()
+            with col4:
+                if st.button(verified_button_text, key="verified_button"):
+                    if verified:
+                        report_datalist['verified'] = False
+                        st.write("Verified:", False)
+                        st.write("Report data verified")
+                    else:
+                        report_datalist['verified'] = True
+                        st.write("Verified:", True)
+                        st.write("Report data removed verified")
 
-    if data_type == "Users":
+                    data_ref.child(selected_key).child('Report').set(report_datalist)
+                    st.experimental_rerun()
+
+    if data_type == "👤 Users":
         reports_ref = data_ref.child(selected_key).child('Report').child('Reports')
         reports = reports_ref.get()
         if reports:
@@ -230,7 +237,7 @@ def data():
             headers = ['Report Key/s (user identification key/s)'] + list(reports[list(reports.keys())[0]].keys())
             table = [headers] + table_data
             st.table(table)
-                
+
             delete_key = st.text_input("Enter the key to delete:")
 
             if st.button("Delete"):
@@ -241,33 +248,32 @@ def data():
                     st.write("Deleted key:", delete_key, "at", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                     st.write("Please refresh to update data")
                 else:
-                    st.write("Invalid key. Please enter a valid key.")       
+                    st.write("Invalid key. Please enter a valid key.")
         else:
             st.write("No reports available.")
 
+    st.markdown("""
+    <style>
+    .refresh-button-container 
+    {
+        margin-top: 100px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-        st.markdown("""
-        <style>
-        .refresh-button-container 
-        {
-            margin-top: 100px;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+    col1, col2, col3, col4 = st.columns([3,3,2,1])
 
-        with st.container():
-            st.markdown('<div class="refresh-button-container">', unsafe_allow_html=True)
-            refresh_button = st.button("Refresh", key="refresh_button")
-            st.markdown('</div>', unsafe_allow_html=True)
-
+    with col4:
+        refresh_button = st.button("Refresh ♻️", key="refresh_button")
         if refresh_button:
-                st.experimental_rerun()     
+            st.experimental_rerun()
+
 
 def reports():
 
     st.markdown("""<style>table { font-size: 10px; font-family: Monospace; }</style>""", unsafe_allow_html=True)
     
-    st.title("Reports")
+    st.title("📄 Reports")
 
     data_ref = db.reference('Data')
     data = data_ref.get()
@@ -304,10 +310,12 @@ def reports():
 
     st.table(filtered_df)
 
+    refresh_button = st.button("\U0001F504 Refresh", key="refresh_button")
+    if refresh_button:
+        st.experimental_rerun()    
 
 def statistics():
-
-    st.title("Statistics")
+    st.title("📈 Statistics")
     st.markdown("This page provides data analytics on location statistics, including NCR cities' occurrences and monthly trends.")
 
     data_ref = db.reference('Data')
@@ -349,9 +357,17 @@ def statistics():
 
     total_count = sum(city_counts)
 
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6))
+    graph_type = st.session_state.get("graph_type", "line")
+    
+    if graph_type == "line":
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6))
+        ax1.plot(cities, city_counts, marker='o', linestyle='-', color='blue')
+        ax2.plot(months, month_counts, marker='o', linestyle='-', color='green')
+    else:
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6))
+        ax1.bar(cities, city_counts, color='blue')
+        ax2.bar(months, month_counts, color='green')
 
-    ax1.plot(cities, city_counts, marker='o', linestyle='-', color='blue')
     ax1.set_xlabel('City')
     ax1.set_ylabel('Occurrences')
     ax1.set_title('Location Statistics (NCR Cities)')
@@ -361,7 +377,6 @@ def statistics():
 
     ax1.set_xticklabels(cities, rotation=90, ha='right')
 
-    ax2.bar(months, month_counts, color='green')
     ax2.set_xlabel('Month')
     ax2.set_ylabel('Occurrences')
     ax2.set_title('Location Statistics by Month')
@@ -384,9 +399,23 @@ def statistics():
 
     st.pyplot(fig)
 
-    refresh_button = st.button("Refresh", key="refresh_button")
-    if refresh_button:
-        st.experimental_rerun()
+    col1, col2, col3, col4 = st.columns([3,3,2,1])
+
+    toggle_button_text = "\U0001F4CA Switch to Bar Graph" if st.session_state.get("graph_type", "line") == "line" else "\U0001F4CA Switch to Line Graph"
+
+    with col1:
+        if st.button(toggle_button_text, key="toggle_button"):
+            graph_type = st.session_state.get("graph_type", "line")
+            if graph_type == "line":
+                st.session_state["graph_type"] = "bar"
+            else:
+                st.session_state["graph_type"] = "line"
+            st.experimental_rerun()
+    with col4:
+        refresh_button = st.button("\U0001F504 Refresh", key="refresh_button")
+        if refresh_button:
+            st.experimental_rerun()
+
 
 def local_css(file_name):
     with open(file_name) as f:
