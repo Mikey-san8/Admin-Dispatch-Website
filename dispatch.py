@@ -127,7 +127,7 @@ def data():
     else:
         block_button_text = "Block 🔒"
 
-    with col3:
+    with col2:
         if st.button(block_button_text, key="block_button"):
             if blocked:
                 selected_data['blocked'] = False
